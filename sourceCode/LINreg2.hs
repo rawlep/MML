@@ -173,4 +173,3 @@ standardizedFit ks@(_:_) = S.stddev . fromList $ map mSgLn ks
         mx   xs'     =  (fst . head . realignedNpieces 0 1 . (: [])) [1 .. fromIntegral $ dim xs']
         mmlFun vs    =  mmlLinearRegLP vs 1 1  (mx vs)
 
-
