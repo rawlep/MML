@@ -125,7 +125,6 @@ differentiateBy f (x:xs) ys    =
             where  (ps, qs) =  differentiateBy f xs zs
 
 
----
 --- findIndexesPresent f  xs  ys: finds the indexes of elements  xs
 --- where f i is in ys
 findIndexesPresent :: Eq a => (b -> a) -> [b] -> [a] -> [Int]
