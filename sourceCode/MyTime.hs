@@ -34,3 +34,4 @@ nMins  n  xs  ys | n == 0 = ys
                  | otherwise =  let y = (minimum xs)
                                     (_,rest) = partition (== y) xs
                                 in    nMins (n-1) rest (y:ys)
+
