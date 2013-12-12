@@ -87,9 +87,9 @@ mmlRprGD_aux g ys n cts nSLP dss model =  do
             fL             = (+ 1) . fromIntegral . length
             aA'            = fL cts
             -------------------------------------------------------
-            siG            =  sigD  model -- model
-            siGE           =  sigE  model  -- model
-            taU            =  tau   model   -- sqrt ((abar <.> abar) /(aA + 2)) -- tau  model
+            siG            =  sigD  model 
+            siGE           =  sigE  model 
+            taU            =  tau   model   
             ---------------------------------------------------------
             --
             xXa            =  invS nSLP (dss <> (aBar model)) ---
