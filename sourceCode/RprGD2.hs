@@ -52,7 +52,7 @@ mapP' f = foldl' (\bs a -> let fa = (f a) `St.using`  St.rseq in
                                 fa : bs ) []
 --
 mapP :: (a -> b) -> [a] -> [b]
-mapP  f = St.parMap St.rseq f -- concatPMap (\a -> [f a])
+mapP  f = St.parMap St.rseq f 
 
 concatPMap' f   = foldl'Rnf  (\xs x -> xs ++ [St.using (f x) (St.dot St.rseq St.rpar) ] ) []
 
@@ -73,7 +73,7 @@ mmlRprGD g ys n cts nSLP dss (ml, model) = mmlRprGD_aux g ys n cts nSLP dss  mod
 mmlRprGD_aux :: (RandomGen g) => g
      -> Vector Double
      -> Double
-     -> [Int] -- Double
+     -> [Int] 
      -> Maybe Bool
      -> Matrix Double
      -> Mmodel
@@ -91,14 +91,11 @@ mmlRprGD_aux g ys n cts nSLP dss model =  do
             siGE           =  sigE  model 
             taU            =  tau   model   
             ---------------------------------------------------------
-            --
             xXa            =  invS nSLP (dss <> (aBar model)) ---
             abar           = aBar model
 
             aA             =  fromIntegral . (\ a -> if a == 2 then 1 else a `div` 2)  $ dim  abar
-            -- faa         = fromIntegral . dim
-            --
-            errFun  a b    =  (r_n model a b) -- (\tt -> if tt then r_n model a b else 1) -- 0.999999
+            errFun  a b    =  (r_n model a b) 
             rN             =   zipVectorWith  errFun xXa ys -- (r_n model)
             lnR            =   dim rN   -- get the magnitude of rN
             wData :: Matrix Double
@@ -109,7 +106,7 @@ mmlRprGD_aux g ys n cts nSLP dss model =  do
             xtWx            =  ((trans dss) <> wData) <> dss
             ------------------------------------------------------------
             ---
-            nAlpha         =  foldVector (+) 0 rN  -- sum the vector
+            nAlpha         =  foldVector (+) 0 rN  
             nAlpA1         =  nAlpha - aA - 1 --
             --
             ysSubXa        =  zipVectorWith (-) ys  xXa -- the data minus the predictions
@@ -126,11 +123,8 @@ mmlRprGD_aux g ys n cts nSLP dss model =  do
             restrPrior     = maybe restrPr (\_ -> restrPr) nSLP
             l1             =   (aA + 2.0) * logg taU + aBarSqTau1 - restrPrior  + 0.5 * ((n-2) * log (2 * pi))
             ----------------------------------- log 2 * (aA + 1)/2 ---------------------------------
-            --l2_aux
             l2              =   nAlpA1 * logg siG + (1/(2 * siG^2)) * (ySubWySub wData)
-            -- line 3
             l3              =  (n - nAlpha) * logg siGE + (1/(2 * siGE^2)) * (ySubWySub wError)  + 0.5 * logg (2 * nAlpha)
-            -- line 4     =
             mlLogs          = 0.5 * log (det xtWx) + 0.5 * logg (2*(n - nAlpha)) +  0.5 * log (pi * (aA + 3)) 
             l4              =   mlLogs - 1.319
 ----------------------------------------------------------------------------------------------------
@@ -153,8 +147,6 @@ nSlopes - determines whether to exclude negative slopes: if true, negative slope
 rprOnly - toggles the applicaion of the MMLRPR function only. The likelihood of maintenance
           is not applied to each interventions
 ----------------------------------------------------------------------------------------------------}
--- vunStdNorm,printElm,vstNorm,
--- mmlRprGdEvl ms dpt vys pp g nSlopes mtd seed
 mmlRprGdEvl :: (RandomGen g) => Int ->
     Int -> -- error search depth limit
     [Vector Double]  -> -- Either (Vector Double) [Double] -> -- the data in standardized for
@@ -173,7 +165,6 @@ mmlRprGdEvl n dpt ys pp gen nSlopes mtd = -- mN std
             ---------------------------------------------------------------------------------------------------
             unStd :: (OModel,(Vector Double,[Int])) -> (OModel,(Vector Double,[Int]))
             unStd  (Omod (MkModel c b e ks d)  ml,(vs,ys)) =  (Omod (MkModel c b e (vunStdNorm' ks) d)  ml,(vunStdNorm' vs,ys))
-            --- unSd :: (Maybe ( (OModel,(Vector Double,[Int]) ) , [Double]))
             unSd ms =
                 case ms of
                     Nothing -> Nothing
@@ -183,10 +174,12 @@ mmlRprGdEvl n dpt ys pp gen nSlopes mtd = -- mN std
 mmlRprAuxGD n _ m p ysv pp gen nSlopes mtd toOpt = do
     return minMod
     where
-        result  rprss =  (snd (minimumBy (comparing (fst . snd)) rprss), map fst rprss) -- (minimumBy (comparing (fst . snd))
+        minMod = liftM applyMixture $
+                    maybe Nothing (\_ -> Just $ minimumBy (comparing (fst . fst))  rprs1) (listToMaybe rprs1)
+        --
+        result  rprss =  (snd (minimumBy (comparing (fst . snd)) rprss), map fst rprss) 
         f         =  fromIntegral
         (g1,_)    =  split gen
-        --dummy   =  ((dummyMod , (fromList [0] ,[])) ,[])
         abr' ::  Matrix Double -> [(Double, (Vector Double, (Double, Vector Double))) ]
         abr'      = (: []) . minimumBy (comparing fst)
                     . zipWith (\f a -> f a) (map (\ys -> mmlLinearRegLP ys 1 1) setLen)
@@ -195,15 +188,14 @@ mmlRprAuxGD n _ m p ysv pp gen nSlopes mtd toOpt = do
                 len    = length ysv
                 setLen = replicate len $ join ysv
         ----------------------------------------------------------------------------
-        initM b s =  initModel gen s b -- let [(_, (s,b))] = abr' mxx in
+        initM b s =  initModel gen s b -
         initLz (ml, (prd, (s,ab))) =  (ml, (prd , initM ab s))
         --
         mod :: Matrix Double -> [(Double, (Vector Double, Mmodel))]
-        mod  mxx  =  map   initLz $ abr'  mxx -- .  snd . snd . abr
+        mod  mxx  =  map   initLz $ abr'  mxx 
         ----------------------------------------------------------------------------
         nN = f . sum $ map dim ysv -- n
         nNs = map ((\n -> [1 .. n]) . f . dim) ysv
-        -- p > 0 && p <= 1
         fLn = (+ 1) . f . length
         msgLm (Omod _ l) = l
         appMML g1 nM ct  mmX (ml,(prd , inMd))  = unsafePerformIO $ mmlRprGD g1 (join  ysv) nM ct nSlopes mmX (ml, inMd)
@@ -213,22 +205,17 @@ mmlRprAuxGD n _ m p ysv pp gen nSlopes mtd toOpt = do
         --------------------------------------------------------------------------------------------
         ----------- applying the mixture model to the discovered intervention, only ----------------
         rprs1  =   [ (kx, cm1) | cm1 <- [0 .. m],  kx <- ( concatPMap (mapSnd . iTr) . (nps cm1)) nNs  ]  `St.using` (St.parList St.rseq)
-        minMod = liftM applyMisture $
-                    maybe Nothing (\_ -> Just $ minimumBy (comparing (fst . fst))  rprs1) (listToMaybe rprs1)
-        -- rprs   = rprs1  mysv --
-
-        applyMisture ( (Omod md mln , (mx , cts)), cm) =
+        applyMixture ( (Omod md mln , (mx , cts)), cm) =
             let   (!nMd , !mxL)  = unsafePerformIO $ nextModelR' gen cts nSlopes mx (join ysv) md
                   ncma    = n
                   nncma   =  ncma `nCr` cm
                   ncr     =   (binomial n cm p) / f nncma -- else 1
                   lncr    =   log ncr
-                  -- msgLen  = lncr + mln
                   newOMod = Omod nMd ((lncr + mln) + mxL)
                   prds    = getPredictions nSlopes (newOMod, (mx, cts))
             in    (prds , [lncr]  )
         --------------   end applying the Mixture Model at the end ----------------------------------
-        getPredictions nSlp (mm, (xConfig, cts))  =   (mm , (invS nSlp  prds , cts)) -- invSinvS (Just cts)
+        getPredictions nSlp (mm, (xConfig, cts))  =   (mm , (invS nSlp  prds , cts)) 
             where
                prds     =   xConfig <> (aBar (oMod mm))
         --- retain the domain of the function
@@ -297,7 +284,6 @@ mml2DsGD  gen tdPrs optType chxss = do
     -- print ("negslopes is : " ++ show nSlopes)
     if len > 0 then
         if null mks1 then  do
-            -- if all ((> 4) . snd) . fst) rejects
             let noGrupMsg = "NO Groups for section length: " ++ show len
             logLog ("-------------------"++noGrupMsg)
             return  dummy
@@ -306,14 +292,12 @@ mml2DsGD  gen tdPrs optType chxss = do
             return dummy
         else do
             --
-            --print "got here --- "
             scrollLog  (msgP1 ++ msgP2)
             let mks2  = [(a,b,c) | ((a,b),c) <- zip (zip mks1 (rGens gen)) [1 ..]]
             let applyRpr = mapP (mml2DsGD_aux1 total minTrend scrollLog)
             let appMin  = liftM (minimumBy compML'')  . sequence .  applyRpr  -- ($!)
             appMin mks2
     else do
-        -- should return Nothing here so this error can be handled elsewhere
         logLog ("Empty section list sent to MML2DS: " ++ show len ++". limit: "++ show lenLim)
         return dummy
     where
@@ -325,8 +309,6 @@ mml2DsGD  gen tdPrs optType chxss = do
         loggers              =  logFun tdPrs
         scrollLog            =  maybe (\_ -> return ())  (\_ -> loggers !! 0) (listToMaybe loggers)
         logLog               =  maybe (\_ -> return ())  (\_ -> loggers !! 1) (listToMaybe loggers)
-        --processLog            =  maybe (\_ -> return ())  (\_ -> loggers !! 0) (listToMaybe loggers)
-        --myLog' xs            =  do { forkIO $ myLog xs ; return ()}
         maxChain             =  (foldl' (\n xs -> max (length xs) n) 0 xss)
         lenLim               =  lim * maxChain 
         len                  =  length xss
@@ -352,7 +334,6 @@ mml2DsGD  gen tdPrs optType chxss = do
         ---------------------------------------------------------------------------------------}
         mml2DsGD_aux1 :: RandomGen g =>  Int ->
                            Int ->
-                         --(([(Vector Double, Int,Double)],[Int]), g) ->
                          (String -> IO()) ->
                          ( ([([Vector Double], Int)],[Int]), g, Int)  ->
                          IO ([(OModel, ([Double], [Int]))], [Int])
@@ -360,11 +341,10 @@ mml2DsGD  gen tdPrs optType chxss = do
             write ("Calculating mmlrpr on group: "++ show num ++ " of " ++ show total)
             let max1  = sumBy snd pgroups -- sum pgcut
             ----
-            let  calc = [ (result,pgcuts) | -- (vys, ms) <- pgroups
+            let  calc = [ (result,pgcuts) | 
                             let !rprsCalcs =  unsafePerformIO . sequence $ mapP (calcRpR max1 gen minToTrend) pgroups -- do the mlrpr on each grou
                             , all isJust rprsCalcs -- .  filter isJust
                             , let result   = (map fromJust . filter isJust) rprsCalcs]
-            -- print (show $ calc)
             if null calc then do
                 write ("Invalid mmlrpr group for group "++ show num)
                 return dummy
@@ -397,7 +377,6 @@ findGrpsFromData :: Double -> -- the distance of intervention points
     IO [([([Vector Double], Int)], [Int])]
 findGrpsFromData dist inLen   =
     return . findCandidateSet .  uncurry calculateFixedGroups1 . findInterventions_aux
-    --return . (take 15 .  sortBy (comparing avgRelCorr )) .  uncurry calculateFixedGroups1 . findInterventions_aux
     where
         findCandidateSet xs
             | length xs > 100 = maintainBy' avgRelCorr (Just 45) xs
@@ -420,7 +399,7 @@ findGrpsFromData dist inLen   =
         -- relative correlaton between adjacent chains
         relativeCorr :: [Vector Double] -> Double
         relativeCorr xs
-            | length xs < 2 =  2 -- bias against groups with only one chian
+            | length xs < 2 =  4 -- bias against groups with only one chian
             | otherwise     =  mcD xs
             where
                 corrDist ps qs =  abs (nCorrV ps qs - 1)
