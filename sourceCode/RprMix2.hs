@@ -37,9 +37,6 @@ import Data.Maybe (isJust, fromJust, listToMaybe)
 import Data.Ord (comparing)
 import qualified Data.ByteString.Lazy.Char8 as L
 import System.Directory (doesFileExist)
---import ProcessFile (writeOrAppend)
---import qualified Data.Vector as L
---import qualified Data.Seq as R
 import IO
 -----------------------------------------------------------------------------------------------
 instance (Storable a, NFData a) => NFData (Vector a) where
@@ -92,7 +89,6 @@ sim_eq  (MkModel a b c _ z) (MkModel p q r _ z1) =
       
 
 --- the data values
---type XMatrix     = Matrix
 type Weight      = Vector Double
 type Predicted   = Vector Double
 type Data        = Vector Double
