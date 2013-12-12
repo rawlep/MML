@@ -24,7 +24,6 @@ sTranspose  ([]:xss) =   sTranspose xss
 sTranspose  ((x:xs):xss)  =   (x: [h | (h:_) <- xss ]) : (sTranspose (xs : [t | (_:t) <- xss]))
 		where sCons ys yss  =  ($!) (ys:) yss
 
-
 --------------------------------------------------------------------------------
 --- square: says if a matrix is a square matrix
 square_aux :: [[a]]  -> Int -> (Bool,Int)
@@ -76,9 +75,6 @@ mkNxN    !xs   a  = mkNxN' xs  [] a
 
 mkNxN0   xs  = mkNxN xs 0
 
-
---
---mkNxN0   xs    =   mkNxN xs 0
 
 --- magnitude of a vector
 norm :: Floating a => [a] ->  a
