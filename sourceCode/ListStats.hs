@@ -85,7 +85,6 @@ bestN  comp   lim  xs
         myBest n  f   = myTake n .  sortBy (comparing f)
         mn            = lim `div` 2
 
---
 --- computed the weighted average of the residuals of values, which represent
 --- points on the y-axis plotted against x-values [1 .. n], where n is the
 -- length of the list. The weight biased towards is determind as the
