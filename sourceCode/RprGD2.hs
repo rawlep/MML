@@ -35,7 +35,7 @@ import ProcessFile (writeToFile,log2File,writeOrAppend,myTime)
 import LMisc hiding (force) 
 import ListStats (nCr,normal,binomial ,myTake,-- corr,
                   mean, adjustedMatrix,cdf, meanBy, stDivBy, -- stDiv,
-                  adjustedMatrixN, adjustedMatrixPN,stNorm,mean,stDivM) -- gammaln,
+                  adjustedMatrixN, adjustedMatrixPN,stNorm,mean,stDivM) 
 ---------------------------------------------------------------------------------------------
 ----                 optimisation type
 data OptimisationType = Rapid | FromData | WithDepth Int deriving (Show, Eq)-- | WithNum Int
